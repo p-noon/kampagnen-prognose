@@ -85,12 +85,14 @@ footer a:hover { text-decoration: underline; }
 @media (max-width: 600px) {
   .result-grid {
     display: flex;
-    flex-direction: column; /* ✅ jetzt untereinander */
+    flex-direction: column;
+    align-items: center;   /* ✅ Zentriert die Kacheln */
     gap: 10px;
   }
 
   .result-card {
-    width: 100%;
+    width: 90%;            /* ✅ sorgt für gleichmäßigen Abstand links/rechts */
+    max-width: 400px;      /* optional, damit sie nicht zu breit werden */
   }
 }
 </style>
