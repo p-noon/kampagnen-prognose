@@ -104,27 +104,35 @@ footer a:hover { text-decoration: underline; }
 </div>
 
 <script>
+/* Helfer: lesen/formatieren */
 function parseNum(v){
-  return parseFloat(v.replace(/\./g,"").replace(",",".").replace(/[^\d.-]/g,""))||0;
+  return parseFloat(String(v).replace(/\./g,"").replace(",",".").replace(/[^\d.-]/g,""))||0;
 }
-
 function fmt(num,dec=2){
   return isFinite(num)?num.toLocaleString("de-DE",{minimumFractionDigits:dec,maximumFractionDigits:dec}):"–";
 }
-
 function formatNumber(num){
   return num.toLocaleString('de-DE', {minimumFractionDigits:2, maximumFractionDigits:2});
 }
 
+/* Update Netto-Anzeige + X und Y (nur Anzeige) */
 function updateNetto(){
   const gross = parseNum(document.getElementById("revenueGross").value);
   const variable = parseNum(document.getElementById("variableCost").value);
-  const net = gross / 1.19;
-  const profit = net - variable;
+  const net = gross / (gross===0?1:1.19);
+  const X = net - variable;
+  const Y = gross !== 0 ? X / gross : 0;
   document.getElementById("revenueNet").value = gross ? formatNumber(net) + " €" : "";
-  document.getElementById("netProfitInfo").innerText = gross > 0 ? "Netto-Ertrag pro Bestellung: " + formatNumber(profit) + " €" : "";
+  document.getElementById("netProfitInfo").innerText = gross > 0 ? "Netto-Ertrag pro Bestellung: " + formatNumber(X) + " € (Ertrag pro Umsatz: " + fmt(Y,4) + ")" : "";
 }
 
+/* Berechnung gemäß deiner Logik:
+   X = netto - variable
+   Y = X / bruttoumsatz
+   umsatz = roas * budget
+   ergebnis = umsatz * Y - budget - fixkosten
+   Profit pro Werbe-Euro (ohne Fixkosten) = roas * Y - 1
+*/
 function calcResult(){
   const gross = parseNum(document.getElementById("revenueGross").value);
   const variable = parseNum(document.getElementById("variableCost").value);
@@ -132,39 +140,47 @@ function calcResult(){
   const fixed = parseNum(document.getElementById("fixedCost").value);
   const budget = parseNum(document.getElementById("marketingBudget").value);
 
-  const net = gross / 1.19;
-  const profitPerOrder = net - variable;
-  const profitPerEuro = (profitPerOrder / gross) * roas - 1;
+  const net = gross / (gross===0?1:1.19);
+  const X = net - variable; // Netto-Umsatz - Kosten
+  const Y = gross !== 0 ? X / gross : 0; // Ertrag pro Umsatz
+
+  const revenue = roas * budget; // Umsatz
+  const result = revenue * Y - budget - fixed; // Ergebnis nach deiner Formel
+
+  // Profit pro Werbe-Euro (ohne Fixkosten) = roas * Y - 1
+  const profitPerEuro = roas * Y - 1;
+
+  // Anzeige
+  document.getElementById("profitPerEuro").innerText = isFinite(profitPerEuro) ? fmt(profitPerEuro,4) : "–";
+  document.getElementById("totalProfit").innerText = formatNumber(result) + " €";
 
   const results = document.getElementById("results");
-  const warning = document.getElementById("warning");
   results.style.display = "block";
-
-  document.getElementById("profitPerEuro").innerText = formatNumber(profitPerEuro);
-
-  const totalProfit = budget * profitPerEuro - fixed;
-  document.getElementById("totalProfit").innerText = formatNumber(totalProfit) + " €";
-
-  warning.innerText = totalProfit < 0 ? "Achtung: Verlust bei dieser Kampagne!" : "";
+  document.getElementById("warning").innerText = result < 0 ? "Achtung: Verlust bei dieser Kampagne!" : "";
 }
 
-// Eingaben beim Verlassen formatieren
+/* Formatieren beim Verlassen + input-event für Netto-Aktualisierung */
 ['revenueGross','variableCost','marketingBudget','roas','fixedCost'].forEach(id=>{
   const el=document.getElementById(id);
-  el.addEventListener('blur',()=>{ el.value = fmt(parseNum(el.value)).replace(",00",""); });
-  el.addEventListener('input',updateNetto);
+  // beim Tippen: nur updateNetto, damit Netto-Anzeige live bleibt
+  el.addEventListener('input', updateNetto);
+  // beim Verlassen: formatiere mit Tausenderpunkten / entferne ggf. ,00
+  el.addEventListener('blur', ()=>{
+    const n = parseNum(el.value);
+    // bei roas: sinnvoll weniger Nachkommastellen darstellen (2)
+    if(id === 'roas'){
+      el.value = isFinite(n) ? n.toLocaleString('de-DE',{minimumFractionDigits:0, maximumFractionDigits:2}) : '';
+    } else {
+      el.value = isFinite(n) ? fmt(n).replace(",00","") : '';
+    }
+  });
 });
 
-// Overlay
-function closeOverlay(){
-  document.getElementById("overlay").style.display = "none";
-}
-document.getElementById("embedLink").addEventListener("click", e => {
-  e.preventDefault();
-  document.getElementById("overlay").style.display = "flex";
-});
+/* Overlay */
+function closeOverlay(){ document.getElementById("overlay").style.display = "none"; }
+document.getElementById("embedLink").addEventListener("click", e => { e.preventDefault(); document.getElementById("overlay").style.display = "flex"; });
 
-// initial
+/* init */
 updateNetto();
 </script>
 
