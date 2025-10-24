@@ -82,23 +82,15 @@ footer a:hover { text-decoration: underline; }
 }
 
 
-.results-container {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-/* ✅ Mobile: Kacheln nebeneinander */
 @media (max-width: 600px) {
-  .results-container {
+  .result-grid {
+    display: flex;
     flex-direction: row;
-    justify-content: space-between;
-    align-items: stretch;
+    gap: 10px;
   }
 
-  .result-box {
+  .result-card {
     flex: 1;
-    min-width: 0;
   }
 }
 </style>
