@@ -54,22 +54,22 @@ footer a:hover { text-decoration: underline; }
     <div class="column">
       <h3>Grunddaten</h3>
       <label>Bruttoumsatz pro Bestellung (in €)</label>
-      <input id="revenueGross" type="number" placeholder="z. B. 60" step="0.01" oninput="updateNetto()">
+      <input id="revenueGross" type="text" placeholder="z. B. 60" oninput="updateNetto()">
       <label>Netto-Umsatz (automatisch)</label>
       <input id="revenueNet" type="text" readonly style="background:#f0f0f0;">
       <label>Variable Kosten (Produktion + Versand, in €)</label>
-      <input id="variableCost" type="number" placeholder="z. B. 30" step="0.01" oninput="updateNetto()">
+      <input id="variableCost" type="text" placeholder="z. B. 30" oninput="updateNetto()">
       <div id="netProfitInfo" style="font-size:0.85rem;color:#0071e3;margin-top:6px;"></div>
     </div>
 
     <div class="column">
       <h3>Kampagne</h3>
       <label>Marketingbudget (in €)</label>
-      <input id="marketingBudget" type="number" placeholder="z. B. 1000" step="1">
+      <input id="marketingBudget" type="text" placeholder="z. B. 1.000">
       <label>ROAS</label>
-      <input id="roas" type="number" placeholder="z. B. 3" step="0.1">
+      <input id="roas" type="text" placeholder="z. B. 3">
       <label>Einmalige Fixkosten (optional, in €)</label>
-      <input id="fixedCost" type="number" placeholder="z. B. 0" step="1">
+      <input id="fixedCost" type="text" placeholder="z. B. 0">
     </div>
   </div>
 
@@ -104,25 +104,33 @@ footer a:hover { text-decoration: underline; }
 </div>
 
 <script>
+function parseNum(v){
+  return parseFloat(v.replace(/\./g,"").replace(",",".").replace(/[^\d.-]/g,""))||0;
+}
+
+function fmt(num,dec=2){
+  return isFinite(num)?num.toLocaleString("de-DE",{minimumFractionDigits:dec,maximumFractionDigits:dec}):"–";
+}
+
 function formatNumber(num){
   return num.toLocaleString('de-DE', {minimumFractionDigits:2, maximumFractionDigits:2});
 }
 
 function updateNetto(){
-  const gross = +document.getElementById("revenueGross").value || 0;
-  const variable = +document.getElementById("variableCost").value || 0;
+  const gross = parseNum(document.getElementById("revenueGross").value);
+  const variable = parseNum(document.getElementById("variableCost").value);
   const net = gross / 1.19;
   const profit = net - variable;
-  document.getElementById("revenueNet").value = net ? formatNumber(net) + " €" : "";
+  document.getElementById("revenueNet").value = gross ? formatNumber(net) + " €" : "";
   document.getElementById("netProfitInfo").innerText = gross > 0 ? "Netto-Ertrag pro Bestellung: " + formatNumber(profit) + " €" : "";
 }
 
 function calcResult(){
-  const gross = +document.getElementById("revenueGross").value || 0;
-  const variable = +document.getElementById("variableCost").value || 0;
-  const roas = +document.getElementById("roas").value || 0;
-  const fixed = +document.getElementById("fixedCost").value || 0;
-  const budget = +document.getElementById("marketingBudget").value || 0;
+  const gross = parseNum(document.getElementById("revenueGross").value);
+  const variable = parseNum(document.getElementById("variableCost").value);
+  const roas = parseNum(document.getElementById("roas").value);
+  const fixed = parseNum(document.getElementById("fixedCost").value);
+  const budget = parseNum(document.getElementById("marketingBudget").value);
 
   const net = gross / 1.19;
   const profitPerOrder = net - variable;
@@ -137,14 +145,17 @@ function calcResult(){
   const totalProfit = budget * profitPerEuro - fixed;
   document.getElementById("totalProfit").innerText = formatNumber(totalProfit) + " €";
 
-  if(totalProfit < 0){
-    warning.innerText = "Achtung: Verlust bei dieser Kampagne!";
-  } else {
-    warning.innerText = "";
-  }
+  warning.innerText = totalProfit < 0 ? "Achtung: Verlust bei dieser Kampagne!" : "";
 }
 
-// Embed Overlay
+// Eingaben beim Verlassen formatieren
+['revenueGross','variableCost','marketingBudget','roas','fixedCost'].forEach(id=>{
+  const el=document.getElementById(id);
+  el.addEventListener('blur',()=>{ el.value = fmt(parseNum(el.value)).replace(",00",""); });
+  el.addEventListener('input',updateNetto);
+});
+
+// Overlay
 function closeOverlay(){
   document.getElementById("overlay").style.display = "none";
 }
