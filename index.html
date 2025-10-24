@@ -85,12 +85,12 @@ footer a:hover { text-decoration: underline; }
 @media (max-width: 600px) {
   .result-grid {
     display: flex;
-    flex-direction: row;
+    flex-direction: column; /* ✅ jetzt untereinander */
     gap: 10px;
   }
 
   .result-card {
-    flex: 1;
+    width: 100%;
   }
 }
 </style>
