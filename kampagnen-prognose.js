@@ -79,18 +79,59 @@ class KampagnenPrognose extends HTMLElement {
         cursor:pointer;
       }
 
-      @media (max-width: 600px) {
-        .result-grid {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          gap: 10px;
-        }
-        .result-card {
-          width: 90%;
-          max-width: 400px;
-        }
-      }
+   /* --- Schriftgrößenanpassungen --- */
+.subtitle {
+  font-size: 1rem;
+}
+
+.column h3 {
+  font-size: 1.3rem;
+}
+
+.result-card p {
+  font-size: 0.9rem;
+}
+
+/* --- Responsive Layout --- */
+@media (max-width: 1200px) {
+  .calculator {
+    padding: 28px;
+  }
+}
+
+@media (max-width: 900px) {
+  .input-grid {
+    flex-direction: column;
+    gap: 12px;
+  }
+  .column {
+    width: 100%;
+  }
+}
+
+@media (max-width: 600px) {
+  .calculator {
+    padding: 20px;
+  }
+  .column h3 {
+    font-size: 1.2rem;
+  }
+  .subtitle {
+    font-size: 0.95rem;
+  }
+  .result-card p {
+    font-size: 0.85rem;
+  }
+  .input-grid {
+    flex-direction: column;
+  }
+  .result-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+}
+
       </style>
 
       <div class="calculator">
