@@ -10,7 +10,7 @@ class KampagnenPrognose extends HTMLElement {
         padding: 20px;
       }
       .calculator {
-        max-width: 950px;
+        max-width: 1200px;
         margin: 40px auto;
         background: #fff;
         border-radius: 24px;
